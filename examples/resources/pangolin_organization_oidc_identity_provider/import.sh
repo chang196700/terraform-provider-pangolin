@@ -1,0 +1,1 @@
+terraform import pangolin_organization_oidc_identity_provider.example 'example/2'

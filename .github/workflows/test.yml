@@ -1,0 +1,47 @@
+name: Test
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        terraform: ['1.11.4', '1.12.2']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - name: Unit and protocol tests
+        run: go test ./...
+      - name: Terraform lifecycle acceptance tests against local fixtures
+        env:
+          TF_ACC: '1'
+        run: |
+          export TF_ACC_TERRAFORM_PATH="$(command -v terraform)"
+          go test ./internal/provider -run TestAcc -count=1 -timeout 30m
+      - name: Static checks
+        run: |
+          go vet ./...
+          test -z "$(gofmt -l $(git ls-files '*.go'))"
+          go run ./cmd/specgen
+          git diff --exit-code -- internal/contract/spec.json
+          go run ./cmd/docs -check
+          terraform fmt -check -recursive examples
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./...

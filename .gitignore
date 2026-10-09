@@ -1,0 +1,12 @@
+.cache/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+dist/
+terraform-provider-pangolin*
+!terraform-provider-pangolin*.md
+.terraform.lock.hcl
+*.test
+*.exe
