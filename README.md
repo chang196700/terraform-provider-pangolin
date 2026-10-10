@@ -10,7 +10,7 @@ Provider address: **`chang196700/pangolin`**. API baseline: **Pangolin 1.24.0**,
 
 ## Quick start
 
-After the provider is published to the Terraform Registry:
+Install the published provider directly from the Terraform Registry:
 
 ```hcl
 terraform {
@@ -44,7 +44,7 @@ output "newt_secret" {
 }
 ```
 
-Use the installation mirror below until Registry publication is complete. Enable the Integration API on self-hosted Pangolin and grant the API key the [actions required by your resources](docs/permissions.md). Organizations, global IdPs and organization API-key management require a root key. Commercial features require the corresponding Pangolin edition. A root key cannot enable an upstream route that is absent or requires a browser session.
+The `v0.1.0` provider is published at [registry.terraform.io/chang196700/pangolin](https://registry.terraform.io/providers/chang196700/pangolin). Enable the Integration API on self-hosted Pangolin and grant the API key the [actions required by your resources](docs/permissions.md). Organizations, global IdPs and organization API-key management require a root key. Commercial features require the corresponding Pangolin edition. A root key cannot enable an upstream route that is absent or requires a browser session.
 
 `PANGOLIN_API_KEY` must contain the complete `apiKeyId.apiKeySecret` credential. The `pangolin_organization_api_key.api_key` resource attribute contains only the secret portion; combine it with that resource's `id` when configuring a client.
 
@@ -101,7 +101,7 @@ go build -o terraform-provider-pangolin .
 go run ./cmd/release -version 0.1.0
 ```
 
-The release builder emits six platform ZIP archives, a protocol manifest and SHA-256 checksums under `dist/`. It does not sign or publish. `scripts/verify-mirror.ps1` installs the Windows build into an isolated filesystem mirror, runs `terraform init`, checks provider schema counts, and validates all generated examples.
+The release builder emits six platform ZIP archives, a protocol manifest and SHA-256 checksums under `dist/`. The v0.1.0 release is signed with the Registry key and published on [GitHub Releases](https://github.com/chang196700/terraform-provider-pangolin/releases/tag/v0.1.0). `scripts/verify-mirror.ps1` installs the Windows build into an isolated filesystem mirror, runs `terraform init`, checks provider schema counts, and validates all generated examples.
 
 For development, configure a Terraform CLI `dev_overrides` entry for `registry.terraform.io/chang196700/pangolin` pointing to the folder containing your binary. Alternatively put a release ZIP in `MIRROR/registry.terraform.io/chang196700/pangolin/` and configure `provider_installation.filesystem_mirror` with that directory. A mirror installation does not prove Registry availability.
 

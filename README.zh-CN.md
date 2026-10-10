@@ -8,7 +8,7 @@
 
 ## 使用
 
-安装示例和完整说明见 [英文 README](README.md)；Registry 尚未完成发布时，使用本地镜像安装。`endpoint` 必须包含 `/v1`，密钥可通过 `PANGOLIN_API_KEY` 提供。每个资源显式填写 `org_id`，不同组织不会隐式共用默认组织。
+安装示例和完整说明见 [英文 README](README.md)。Provider `v0.1.0` 已发布到 [Terraform Registry](https://registry.terraform.io/providers/chang196700/pangolin)；`endpoint` 必须包含 `/v1`，密钥可通过 `PANGOLIN_API_KEY` 提供。每个资源显式填写 `org_id`，不同组织不会隐式共用默认组织。
 
 `PANGOLIN_API_KEY` 需要完整的 `apiKeyId.apiKeySecret`。组织密钥资源的 `api_key` 属性只有 secret 部分，使用时需要和该资源的 `id` 拼接。
 
@@ -50,4 +50,4 @@ go run ./cmd/release -version 0.1.0
 
 验收使用真实 Terraform CLI 对接本地 HTTP 模拟服务，验证生命周期、空计划、导入、远端删除恢复、策略切换及密钥行为。默认不访问真实 Pangolin。显式启用真实测试的方式见英文 README；真实实例联调结果不能由模拟测试替代。
 
-发布流程见 [发布说明](docs/releasing.md)。Linux、macOS、Windows 的 amd64/arm64 安装包统一输出到 `dist/`，发布前必须签名校验和并在 Registry 注册公钥。
+发布流程见 [发布说明](docs/releasing.md)。Linux、macOS、Windows 的 amd64/arm64 安装包统一输出到 `dist/`，v0.1.0 已完成校验和签名、GitHub Release 和 Registry 注册。
