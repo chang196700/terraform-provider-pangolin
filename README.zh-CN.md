@@ -2,13 +2,13 @@
 
 面向 Pangolin 1.24.0 的社区 Provider，地址为 `chang196700/pangolin`。支持 Terraform 1.11 及以上版本，使用 Go 1.25 和 Plugin Framework 1.19 开发。
 
-实现 24 类资源，覆盖组织、站点、公网/私网资源、Target、访问策略、用户与角色、OIDC、密钥、告警、健康检查和 AI 网关。单项和列表数据源另外覆盖域名、DNS、证书、Blueprint、邀请、用户设备、模型目录。全部 312 个 API 操作的映射或排除原因见 [接口覆盖清单](docs/api-coverage.md)。
+实现 25 类资源，新增可完整管理域名的 `pangolin_domain`，覆盖组织、站点、公网/私网资源、Target、访问策略、用户与角色、OIDC、密钥、告警、健康检查和 AI 网关。单项和列表数据源另外覆盖域名、DNS、资源名称、证书、Blueprint、邀请、用户设备、模型目录。全部 312 个 OpenAPI 操作以及固定源码中补充路由的映射或排除原因见 [接口覆盖清单](docs/api-coverage.md)。
 
-**1.24.0 存在实际 API 限制。** 部分 OpenAPI 声明没有挂载到 API Key 接口，部分处理程序依赖浏览器会话。因此包含 24 类资源模型不代表未修改的 1.24.0 能运行所有生命周期。采用前请查看 [兼容性表](docs/compatibility.md) 和 [权限清单](docs/permissions.md)；模拟测试不能证明上游缺失接口可用。
+**1.24.0 存在实际 API 限制。** 部分 OpenAPI 声明没有挂载到 API Key 接口，部分处理程序依赖浏览器会话。因此包含 25 类资源模型不代表未修改的 1.24.0 能运行所有生命周期。域名 CRUD 以固定版本源码实际挂载的 Integration 路由为准。采用前请查看 [兼容性表](docs/compatibility.md) 和 [权限清单](docs/permissions.md)；模拟测试不能证明上游缺失接口可用。
 
 ## 使用
 
-安装示例和完整说明见 [英文 README](README.md)。Provider `v0.1.0` 已发布到 [Terraform Registry](https://registry.terraform.io/providers/chang196700/pangolin)；`endpoint` 必须包含 `/v1`，密钥可通过 `PANGOLIN_API_KEY` 提供。每个资源显式填写 `org_id`，不同组织不会隐式共用默认组织。
+安装示例和完整说明见 [英文 README](README.md)。Provider `v0.1.1` 已发布到 [Terraform Registry](https://registry.terraform.io/providers/chang196700/pangolin)；`endpoint` 必须包含 `/v1`，密钥可通过 `PANGOLIN_API_KEY` 提供。每个资源显式填写 `org_id`，不同组织不会隐式共用默认组织。
 
 `PANGOLIN_API_KEY` 需要完整的 `apiKeyId.apiKeySecret`。组织密钥资源的 `api_key` 属性只有 secret 部分，使用时需要和该资源的 `id` 拼接。
 
@@ -44,10 +44,10 @@ go vet ./...
 $env:TF_ACC = '1'
 $env:TF_ACC_TERRAFORM_PATH = (Get-Command terraform).Source
 go test ./internal/provider -run TestAcc -count=1 -timeout 30m
-go run ./cmd/release -version 0.1.0
+go run ./cmd/release -version 0.1.1
 ./scripts/verify-mirror.ps1
 ```
 
 验收使用真实 Terraform CLI 对接本地 HTTP 模拟服务，验证生命周期、空计划、导入、远端删除恢复、策略切换及密钥行为。默认不访问真实 Pangolin。显式启用真实测试的方式见英文 README；真实实例联调结果不能由模拟测试替代。
 
-发布流程见 [发布说明](docs/releasing.md)。Linux、macOS、Windows 的 amd64/arm64 安装包统一输出到 `dist/`，v0.1.0 已完成校验和签名、GitHub Release 和 Registry 注册。
+发布流程见 [发布说明](docs/releasing.md)。Linux、macOS、Windows 的 amd64/arm64 安装包统一输出到 `dist/`，v0.1.1 已完成校验和签名、GitHub Release 和 Registry 注册。

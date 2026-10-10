@@ -8,8 +8,8 @@ import (
 
 func TestAllProviderSchemas(t *testing.T) {
 	defs := definitions()
-	if len(defs) != 24 {
-		t.Fatalf("expected 24 resources, got %d", len(defs))
+	if len(defs) != 25 {
+		t.Fatalf("expected 25 resources, got %d", len(defs))
 	}
 	names := map[string]bool{}
 	for _, d := range defs {

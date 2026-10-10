@@ -16,7 +16,7 @@ terraform {
   required_providers {
     pangolin = {
       source  = "chang196700/pangolin"
-      version = "~> 0.1.0"
+      version = "~> 0.1.1"
     }
   }
 }

@@ -38,8 +38,8 @@ func TestExtraDataSourceSchemas(t *testing.T) {
 			t.Errorf("%s schema: %v", d.Name, diagnostics)
 		}
 	}
-	if len(seen) != 11 {
-		t.Fatalf("expected 11 extra data sources, got %d", len(seen))
+	if len(seen) != 12 {
+		t.Fatalf("expected 12 extra data sources, got %d", len(seen))
 	}
 	if !extraDefinition(t, "blueprint").Outputs["contents"].Sensitive {
 		t.Fatal("blueprint contents can contain secrets")
@@ -101,6 +101,30 @@ func TestDNSRecordsBareArrayResponse(t *testing.T) {
 	rows := objectArray(o[d.ListKey])
 	if len(rows) != 1 || Text(rows[0]["id"]) != "1" || rows[0]["verified"] != true {
 		t.Fatalf("DNS array incorrectly decoded: %#v", o)
+	}
+}
+
+func TestResourceNamesBareArrayResponse(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "GET" || r.URL.Path != "/v1/org/test-org/resource-names" {
+			t.Errorf("unexpected resource names request: %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"success":true,"error":false,"status":200,"data":[{"resourceId":7,"name":"Portal"}]}`))
+	}))
+	defer srv.Close()
+	c, err := client.New(srv.URL+"/v1", "test-key", time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := extraDefinition(t, "resource_names")
+	o, err := d.ReadFunc(context.Background(), c, Values{"org_id": "test-org"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := objectArray(o[d.ListKey])
+	if len(rows) != 1 || Text(rows[0]["resourceId"]) != "7" || Text(rows[0]["name"]) != "Portal" {
+		t.Fatalf("resource names incorrectly decoded: %#v", o)
 	}
 }
 
@@ -177,6 +201,7 @@ func TestAccExtraDataSources(t *testing.T) {
 	responses := map[string]string{
 		"/v1/org/test-org/domain/domain1":                      `{"domainId":"domain1","baseDomain":"example.com","type":"ns","verified":true,"configManaged":false,"lastCheckedAt":1000}`,
 		"/v1/org/test-org/domains":                             `{"domains":[{"domainId":"domain1","baseDomain":"example.com","type":"ns","verified":true}],"pagination":{"total":1,"limit":100,"offset":0}}`,
+		"/v1/org/test-org/resource-names":                      `[{"resourceId":7,"name":"Portal"}]`,
 		"/v1/org/test-org/domain/domain1/dns-records":          `[{"id":2,"domainId":"domain1","recordType":"CNAME","baseDomain":"app","value":"example.com","verified":true}]`,
 		"/v1/org/test-org/certificate/domain1/app.example.com": `{"certId":3,"domain":"*.example.com","domainType":"wildcard","wildcard":true,"status":"valid","expiresAt":2000,"renewalCount":1}`,
 		"/v1/org/test-org/blueprint/4":                         `{"blueprintId":4,"orgId":"test-org","name":"example","source":"api","succeeded":true,"createdAt":1000,"message":"applied","contents":"name: example"}`,
@@ -213,6 +238,7 @@ data "pangolin_domain" "test" {
   domain_id = "domain1"
 }
 data "pangolin_domains" "test" { org_id = "test-org" }
+data "pangolin_resource_names" "test" { org_id = "test-org" }
 data "pangolin_domain_dns_records" "test" {
   org_id = "test-org"
   domain_id = "domain1"
@@ -241,6 +267,7 @@ data "pangolin_users" "test" { idp_id = "internal" }
 		Steps: []resource.TestStep{{Config: config, Check: resource.ComposeTestCheckFunc(
 			resource.TestCheckResourceAttr("data.pangolin_domain.test", "base_domain", "example.com"),
 			resource.TestCheckResourceAttr("data.pangolin_domains.test", "items.0.domain_id", "domain1"),
+			resource.TestCheckResourceAttr("data.pangolin_resource_names.test", "items.0.resource_id", "7"),
 			resource.TestCheckResourceAttr("data.pangolin_domain_dns_records.test", "items.0.id", "2"),
 			resource.TestCheckResourceAttr("data.pangolin_certificate.test", "domain", "app.example.com"),
 			resource.TestCheckResourceAttr("data.pangolin_certificate.test", "certificate_domain", "*.example.com"),

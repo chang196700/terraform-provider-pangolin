@@ -8,7 +8,7 @@ Read permissions are required after create and update, during planning, and for 
 
 ## Resource operation matrix
 
-Names below omit the `pangolin_` prefix. `—` means no separate operation; replacement uses the create and delete permissions. `Unavailable` refers to the stock 1.24.0 Integration API. The table covers all 24 declared resource types; this count includes retained compatibility schemas and does not assert that all 24 can complete a lifecycle on the baseline.
+Names below omit the `pangolin_` prefix. `—` means no separate operation; replacement uses the create and delete permissions. `Unavailable` refers to the stock 1.24.0 Integration API. The table covers all 25 declared resource types; this count includes retained compatibility schemas and does not assert that all 25 can complete a lifecycle on the baseline.
 
 | Resource | Create | Refresh / single read | List data source | Update | Delete |
 |---|---|---|---|---|---|
@@ -18,6 +18,7 @@ Names below omit the `pangolin_` prefix. `—` means no separate operation; repl
 | `private_resource` | `createSiteResource` | `getSiteResource` + `listSiteResources` + `listResourceRoles` + `listResourceUsers` | `listSiteResources` plus association reads | `updateSiteResource` | `deleteSiteResource` |
 | `resource_target` | `createTarget` | `getTarget` | `listTargets` | `updateTarget` | `deleteTarget` |
 | `public_resource_policy` | `createResourcePolicy` | `getResourcePolicy` | `listResourcePolicies` | `updateResourcePolicy` | `deleteResourcePolicy` |
+| `domain` | `createOrgDomain` | `getDomain` | `listOrgDomains` | `updateOrgDomain` (wildcard settings) | `deleteOrgDomain` |
 | `role` | `createRole` | `getRole` + `listRoles` | `listRoles` | `updateRole` | `deleteRole` + `getRole` |
 | `organization_user` | `createOrgUser` + `getOrgUser` + `listUsers` | `listUsers` + `getOrgUser` | `listUsers` | `updateOrgUser` + role actions below | `removeUser` |
 | `client` | `createClient` | `getClient` | `listClients` | `updateClient` + state actions below | `deleteClient` |
@@ -69,6 +70,7 @@ Source anchors: [policy access-control checks](https://github.com/fosrl/pangolin
 | `domain` | `getDomain` |
 | `domains` | `listOrgDomains` |
 | `domain_dns_records` | `getDNSRecords` |
+| `resource_names` | `listResources` |
 | `blueprint` | `getBlueprint` |
 | `blueprints` | `listBlueprints` |
 | `invitations` | `listInvitations` |

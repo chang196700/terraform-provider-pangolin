@@ -36,6 +36,13 @@ func dataDefinitions() []DataDefinition {
 		if d.Name == "user_server_admin" {
 			continue
 		}
+		// Domain has explicit data sources in datasource_extra.go with the
+		// complete server response projection (including DNS verification
+		// state). Do not generate a second `domain`/`domains` data source from
+		// the managed resource definition.
+		if d.Name == "domain" {
+			continue
+		}
 		if d.Name == "public_resource" {
 			managedEnrich := d.EnrichRead
 			d.EnrichRead = func(ctx context.Context, c *client.Client, v Values, o Object) error {

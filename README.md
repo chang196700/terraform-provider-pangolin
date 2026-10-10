@@ -18,7 +18,7 @@ terraform {
   required_providers {
     pangolin = {
       source  = "chang196700/pangolin"
-      version = "~> 0.1.0"
+      version = "~> 0.1.1"
     }
   }
 }
@@ -44,13 +44,13 @@ output "newt_secret" {
 }
 ```
 
-The `v0.1.0` provider is published at [registry.terraform.io/chang196700/pangolin](https://registry.terraform.io/providers/chang196700/pangolin). Enable the Integration API on self-hosted Pangolin and grant the API key the [actions required by your resources](docs/permissions.md). Organizations, global IdPs and organization API-key management require a root key. Commercial features require the corresponding Pangolin edition. A root key cannot enable an upstream route that is absent or requires a browser session.
+The `v0.1.1` provider is published at [registry.terraform.io/chang196700/pangolin](https://registry.terraform.io/providers/chang196700/pangolin). Enable the Integration API on self-hosted Pangolin and grant the API key the [actions required by your resources](docs/permissions.md). Organizations, global IdPs and organization API-key management require a root key. Commercial features require the corresponding Pangolin edition. A root key cannot enable an upstream route that is absent or requires a browser session.
 
 `PANGOLIN_API_KEY` must contain the complete `apiKeyId.apiKeySecret` credential. The `pangolin_organization_api_key.api_key` resource attribute contains only the secret portion; combine it with that resource's `id` when configuring a client.
 
 ## Coverage
 
-The provider exposes **24 managed resource types**, single-object data sources, paginated list data sources, and additional domain, DNS, certificate, Blueprint, invitation, device and AI catalog queries. HCL attributes are typed and use snake_case. IDs are strings; numeric API IDs are converted at the request boundary.
+The provider exposes **25 managed resource types**, including `pangolin_domain`, plus single-object data sources, paginated list data sources, and additional domain, DNS, resource-name, certificate, Blueprint, invitation, device and AI catalog queries. HCL attributes are typed and use snake_case. IDs are strings; numeric API IDs are converted at the request boundary.
 
 The supplied `openapi.yaml` remains unchanged. [The inventory](docs/api-coverage.md) classifies all **312 operations**, including aliases and intentionally excluded workflows. API descriptions omit most response schemas, so adapters and fixtures also use the pinned upstream implementation. Upstream source is a development reference in ignored `.cache/`, not distributed with this provider.
 
@@ -98,10 +98,10 @@ For a live, disposable test organization, explicitly set `PANGOLIN_LIVE_TEST=1`,
 
 ```shell
 go build -o terraform-provider-pangolin .
-go run ./cmd/release -version 0.1.0
+go run ./cmd/release -version 0.1.1
 ```
 
-The release builder emits six platform ZIP archives, a protocol manifest and SHA-256 checksums under `dist/`. The v0.1.0 release is signed with the Registry key and published on [GitHub Releases](https://github.com/chang196700/terraform-provider-pangolin/releases/tag/v0.1.0). `scripts/verify-mirror.ps1` installs the Windows build into an isolated filesystem mirror, runs `terraform init`, checks provider schema counts, and validates all generated examples.
+The release builder emits six platform ZIP archives, a protocol manifest and SHA-256 checksums under `dist/`. The v0.1.1 release is signed with the Registry key and published on [GitHub Releases](https://github.com/chang196700/terraform-provider-pangolin/releases/tag/v0.1.1). `scripts/verify-mirror.ps1` installs the Windows build into an isolated filesystem mirror, runs `terraform init`, checks provider schema counts, and validates all generated examples.
 
 For development, configure a Terraform CLI `dev_overrides` entry for `registry.terraform.io/chang196700/pangolin` pointing to the folder containing your binary. Alternatively put a release ZIP in `MIRROR/registry.terraform.io/chang196700/pangolin/` and configure `provider_installation.filesystem_mirror` with that directory. A mirror installation does not prove Registry availability.
 

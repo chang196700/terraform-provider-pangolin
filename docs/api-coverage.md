@@ -82,8 +82,8 @@ Every operation is classified below. `Mapped` means the behavior is owned by the
 | GET | `/org/{orgId}/clients` | Mapped | client / user_client / user_devices |
 | POST | `/org/{orgId}/create-invite` | Excluded | Invitation consumption and delivery are workflows; invitations are read-only. |
 | GET | `/org/{orgId}/domain/{domainId}` | Mapped | domain / domains / domain_dns_records data sources |
-| PATCH | `/org/{orgId}/domain/{domainId}` | Excluded | Domain creation/deletion lifecycle is absent from this contract. |
-| POST | `/org/{orgId}/domain/{domainId}` | Excluded | Domain creation/deletion lifecycle is absent from this contract. |
+| PATCH | `/org/{orgId}/domain/{domainId}` | Mapped | domain |
+| POST | `/org/{orgId}/domain/{domainId}` | Mapped | domain |
 | GET | `/org/{orgId}/domain/{domainId}/dns-records` | Mapped | domain / domains / domain_dns_records data sources |
 | GET | `/org/{orgId}/domains` | Mapped | domain / domains / domain_dns_records data sources |
 | GET | `/org/{orgId}/event-streaming-destination` | Corrected | event_streaming_destination: runtime route is /org/{orgId}/event-streaming-destinations (plural). |
@@ -319,4 +319,18 @@ Every operation is classified below. `Mapped` means the behavior is owned by the
 | POST | `/virtual-api-key/{virtualApiKeyId}` | Mapped | virtual_api_key |
 | GET | `/virtual-api-key/{virtualApiKeyId}/ai-budgets` | Mapped | ai_budget |
 
-Total: **312 operations**.
+Total: **312 operations** in the supplied OpenAPI document.
+
+## Fixed-source routes omitted from `openapi.yaml`
+
+The pinned Pangolin source registers the following Bearer Integration routes even though they are absent from the supplied OpenAPI document. The domain lifecycle routes are implemented by `pangolin_domain`; the resource-name route is exposed as `pangolin_resource_names`. The restart endpoint remains an imperative operation and is intentionally not modeled as Terraform state.
+
+| Method | Path | Provider disposition |
+|---|---|---|
+| PUT | `/org/{orgId}/domain` | Mapped: `pangolin_domain` create |
+| DELETE | `/org/{orgId}/domain/{domainId}` | Mapped: `pangolin_domain` destroy |
+| POST | `/org/{orgId}/domain/{domainId}/restart` | Excluded: imperative restart |
+| GET | `/org/{orgId}/resource-names` | Mapped: `pangolin_resource_names` |
+| GET | `/org/{orgId}/public-resource-names` | Alias of `resource-names` |
+
+The domain update `POST` and deprecated `PATCH` routes are present in the OpenAPI document and are mapped to `pangolin_domain`; their runtime request body is supplied by the fixed server source.

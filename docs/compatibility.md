@@ -21,6 +21,19 @@ The [client delete handler](https://github.com/fosrl/pangolin/blob/a235635d9e5a6
 
 The single-user data source `pangolin_user` **is available**: `GET /user/{userId}` is registered in the Integration router with both root-key and `getUser` checks. This differs from the unavailable global user list. See the [actual registration](https://github.com/fosrl/pangolin/blob/a235635d9e5a6431ea426431e3e862e965928cd3/server/routers/integration.ts#L1242).
 
+## Fixed-source routes omitted from the supplied OpenAPI
+
+The supplied OpenAPI snapshot is missing several routes that are registered by the pinned 1.24.0 Bearer Integration router. The provider follows the server source for these routes:
+
+| Route | Provider behavior |
+|---|---|
+| `PUT /org/{orgId}/domain` | `pangolin_domain` create |
+| `DELETE /org/{orgId}/domain/{domainId}` | `pangolin_domain` destroy |
+| `POST /org/{orgId}/domain/{domainId}/restart` | Available upstream, retained as an imperative operation and not represented as Terraform state |
+| `GET /org/{orgId}/resource-names` | `pangolin_resource_names` data source |
+
+Domain create accepts `ns`, `cname`, and `wildcard` types subject to the server edition. Domain updates use the documented `POST` route (with the deprecated `PATCH` alias retained upstream), and only wildcard certificate settings are mutable. A config-managed domain cannot be deleted; the provider keeps its state and reports the server error. See the [fixed Integration router](https://github.com/fosrl/pangolin/blob/a235635d9e5a6431ea426431e3e862e965928cd3/server/routers/integration.ts#L3052-L3162) and [domain handlers](https://github.com/fosrl/pangolin/tree/a235635d9e5a6431ea426431e3e862e965928cd3/server/routers/domain).
+
 Changing the endpoint from `/v1` to `/api/v1` does not solve these gaps. The [dashboard server](https://github.com/fosrl/pangolin/blob/a235635d9e5a6431ea426431e3e862e965928cd3/server/apiServer.ts#L31) uses `/api/v1`; its [authenticated router](https://github.com/fosrl/pangolin/blob/a235635d9e5a6431ea426431e3e862e965928cd3/server/routers/external.ts#L82) requires `verifySessionUserMiddleware`. The [session verifier](https://github.com/fosrl/pangolin/blob/a235635d9e5a6431ea426431e3e862e965928cd3/server/auth/sessions/verifySession.ts#L7) reads a session cookie, not the Integration API bearer key. This provider implements API Key authentication only.
 
 ## Corrected event destination list route

@@ -311,13 +311,18 @@ func coverageDocument() ([]byte, error) {
 			count++
 		}
 	}
-	fmt.Fprintf(&b, "\nTotal: **%d operations**.\n", count)
+	fmt.Fprintf(&b, "\nTotal: **%d operations** in the supplied OpenAPI document.\n", count)
+	b.WriteString("\n## Fixed-source routes omitted from `openapi.yaml`\n\nThe pinned Pangolin source registers the following Bearer Integration routes even though they are absent from the supplied OpenAPI document. The domain lifecycle routes are implemented by `pangolin_domain`; the resource-name route is exposed as `pangolin_resource_names`. The restart endpoint remains an imperative operation and is intentionally not modeled as Terraform state.\n\n| Method | Path | Provider disposition |\n|---|---|---|\n| PUT | `/org/{orgId}/domain` | Mapped: `pangolin_domain` create |\n| DELETE | `/org/{orgId}/domain/{domainId}` | Mapped: `pangolin_domain` destroy |\n| POST | `/org/{orgId}/domain/{domainId}/restart` | Excluded: imperative restart |\n| GET | `/org/{orgId}/resource-names` | Mapped: `pangolin_resource_names` |\n| GET | `/org/{orgId}/public-resource-names` | Alias of `resource-names` |\n\nThe domain update `POST` and deprecated `PATCH` routes are present in the OpenAPI document and are mapped to `pangolin_domain`; their runtime request body is supplied by the fixed server source.\n")
 	if count != 312 {
 		return nil, fmt.Errorf("OpenAPI operation count changed: %d; review coverage before regenerating", count)
 	}
 	return []byte(b.String()), nil
 }
 func classifyOperation(m, p string, o contract.Operation) (string, string) {
+	tag := ""
+	if len(o.Tags) > 0 {
+		tag = o.Tags[0]
+	}
 	if m == "delete" && p == "/org/{orgId}" {
 		return "Upstream defect", "organization: stock 1.24.0 handler dereferences session user after Bearer authentication; see compatibility.md."
 	}
@@ -341,9 +346,8 @@ func classifyOperation(m, p string, o contract.Operation) (string, string) {
 	if m == "get" && p == "/public-resource/{resourceId}/access-tokens" {
 		return "Alternative", "public_resource_access_token: use the organization token list and filter resourceId; the direct route fails for root keys."
 	}
-	tag := ""
-	if len(o.Tags) > 0 {
-		tag = o.Tags[0]
+	if tag == "Domain" && (m == "post" || m == "patch") && p == "/org/{orgId}/domain/{domainId}" {
+		return "Mapped", "domain"
 	}
 	if strings.Contains(p, "/logs/") || p == "/" || strings.HasPrefix(p, "/openapi.") || p == "/maintenance/info" {
 		return "Excluded", "Operational telemetry or API discovery."
@@ -363,7 +367,7 @@ func classifyOperation(m, p string, o contract.Operation) (string, string) {
 		return "Excluded", "Certificate issuance/restart action; certificate metadata is read-only."
 	}
 	if tag == "Domain" && m != "get" {
-		return "Excluded", "Domain creation/deletion lifecycle is absent from this contract."
+		return "Mapped", "Domain update is implemented by pangolin_domain; source-only create/delete routes are documented below."
 	}
 	if strings.Contains(p, "create-invite") || (tag == "User Invitation" && m != "get") {
 		return "Excluded", "Invitation consumption and delivery are workflows; invitations are read-only."

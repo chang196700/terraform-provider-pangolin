@@ -24,6 +24,34 @@ func extraDataDefinitions() []DataDefinition {
 	domain.Outputs["last_checked_at"] = Int("lastCheckedAt")
 	domains := DataDefinition{Name: "domains", Description: "Lists all domains available to an organization.", Inputs: extraOrgInputs(), Outputs: domainFields, IsList: true, Endpoint: Endpoint{Method: "GET", Path: "/org/{org_id}/domains"}, ListKey: "domains", Pagination: "offset"}
 
+	// The Integration router also exposes resource names at this path, but the
+	// generated OpenAPI document contains only the legacy plural spelling. Keep
+	// this as a read-only data source because the response is a bare array and
+	// the route has no corresponding lifecycle mutation.
+	resourceNames := DataDefinition{
+		Name:        "resource_names",
+		Description: "Lists public resource IDs and names for an organization.",
+		Inputs:      extraOrgInputs(),
+		Outputs: map[string]Field{
+			"resource_id": ID("resourceId"),
+			"name":        String("name"),
+		},
+		IsList:   true,
+		ListKey:  "resources",
+		Endpoint: Endpoint{Method: "GET", Path: "/org/{org_id}/resource-names"},
+	}
+	resourceNames.ReadFunc = func(ctx context.Context, c *client.Client, v Values) (Object, error) {
+		path, err := Path(resourceNames.Endpoint.Path, v)
+		if err != nil {
+			return nil, err
+		}
+		var rows []Object
+		if err := c.Do(ctx, resourceNames.Endpoint.Method, path, nil, &rows); err != nil {
+			return nil, err
+		}
+		return Object{resourceNames.ListKey: rows}, nil
+	}
+
 	dns := DataDefinition{Name: "domain_dns_records", Description: "Lists DNS records required for a Pangolin domain, including verification status and the server's effective record values.", Inputs: extraOrgInputs(), IsList: true, ListKey: "records", Endpoint: Endpoint{Method: "GET", Path: "/org/{org_id}/domain/{domain_id}/dns-records"}, Outputs: map[string]Field{
 		"id": ID("id"), "domain_id": String("domainId"), "record_type": String("recordType"), "base_domain": String("baseDomain"), "value": String("value"), "verified": Bool("verified"),
 	}}
@@ -58,7 +86,7 @@ func extraDataDefinitions() []DataDefinition {
 	roles := Field{Kind: "list", Element: &Field{Kind: "object", Fields: map[string]Field{"role_id": ID("roleId"), "role_name": String("roleName")}}, API: "roles"}
 	invitations := DataDefinition{Name: "invitations", Description: "Lists pending organization invitations and their assigned roles. This data source never sends invitations or email.", Inputs: extraOrgInputs(), Outputs: map[string]Field{"invite_id": String("inviteId"), "email": String("email"), "expires_at": Int("expiresAt"), "roles": roles}, IsList: true, Endpoint: Endpoint{Method: "GET", Path: "/org/{org_id}/invitations"}, ListKey: "invitations", Pagination: "offset"}
 
-	return []DataDefinition{domain, domains, dns, certificate, blueprint, blueprints, invitations, extraUserDevices(), extraCatalogModels(), extraUser(), extraUsers()}
+	return []DataDefinition{domain, domains, dns, resourceNames, certificate, blueprint, blueprints, invitations, extraUserDevices(), extraCatalogModels(), extraUser(), extraUsers()}
 }
 
 func extraOrgInputs() map[string]Field {
